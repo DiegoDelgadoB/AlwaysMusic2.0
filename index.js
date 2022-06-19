@@ -1,5 +1,4 @@
 const { Pool } = require('pg');
-const { demand } = require('yargs');
 const yargs = require('yargs');
 const mensajeErrores = require('./errores.js');
 
@@ -20,14 +19,14 @@ yargs.command("registrar", "Insertar registro de estudiante", {
         alias: 'r'
     },
     nombre: {
-        describe:'Nombre del estudiante'
+        describe:'Nombre del estudiante',
         demand: true,
         alias: 'n'
     },
     curso: {
         describe: 'Curso al que se inscribe el estudiante',
         demand: true,
-        alias:: 'c'
+        alias: 'c'
     },
     nivel: {
         describe: 'Nivel del estudiante',
@@ -99,5 +98,38 @@ yargs.command("registrar", "Insertar registro de estudiante", {
     let { rut, nombre, curso, nivel } = argumentos;
     const config = {
         text: "UPDATE estudiantes SET nombre=$1, curso=$2, nivel=$3 WHERE rut=$4 RETURNING *", // Actualizar la información de un estudiante.
+        values:[nombre, curso, nivel, rut]
     } 
-})
+    try {
+        const res = await pool.query(config);
+        if (res.rows.length == 0){
+            console.log("Rut incorrecto, por favor verifique la lista");
+        }else{
+            console.table(res.rows);
+        }
+    } catch (error) {
+        console.log(mensajesErrores(error.code));
+    }
+}).command("eliminar", "Eliminar registro de estudiante", {
+    rut: {
+        describe: 'Identificación única del estudiante',
+        demand: true,
+        alias: 'r'
+    }
+}, async (argumentos) => {
+    let rut = argumentos.rut;
+    const config = {
+        text: "DELETE FROM estudiantes WHERE rut= $1 RETURNING *", // Eliminar el registro de un estudiante.
+        values: [rut] 
+    }
+    try {
+        const res = await pool.query(config);
+        if (res.rows.length == 0){
+            console.log("El estudiante no existe, por favor verifique la lista");
+        }else{
+            console.table(res.rows);
+        }
+    } catch (error) {
+        console.log(mensajesErrores(error.code));
+    }
+}).help().argv;
