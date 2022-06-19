@@ -1,6 +1,6 @@
 const { Pool } = require('pg');
 const yargs = require('yargs');
-const mensajeErrores = require('./errores.js');
+const mensajesErrores = require('./errores.js');
 
 const config = {
     user: "postgres",
